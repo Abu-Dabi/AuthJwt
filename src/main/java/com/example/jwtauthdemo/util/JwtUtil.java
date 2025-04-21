@@ -1,44 +1,56 @@
 package com.example.jwtauthdemo.util;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
+
+import java.security.Key;
 import java.util.Date;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Component
 public class JwtUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
-    private final String secret = "MPlVrKgLmn4DHwbSAzZgblid6adaYZB0wx0dxiZ7YEjD63mfRa1f8cM3xMnora59WqX2iYvUHtVQ7pCwv8tvgw==";
-    private final long expiration = 1000 * 60 * 60;
+    private final Dotenv dotenv = Dotenv.load();
+    private final String SECRET_KEY = dotenv.get("JWT_SECRET");
 
-    public String generateToken(String username) {
-        // Логирование генерации токена
-        logger.info("Generating token for username: {}", username);
+    private final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 15; // 15 минут
+    private final long REFRESH_TOKEN_VALIDITY = 1000 * 60 * 60 * 24 * 7; // 7 дней
+
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    }
+
+    public String generateAccessToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(SignatureAlgorithm.HS512, secret)
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractUsername(String token) {
-        // Логирование извлечения имени пользователя из токена
-        logger.info("Extracting username from token");
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token)
-                .getBody().getSubject();
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public boolean validateToken(String token) {
         try {
-            logger.info("Validating token: {}", token);
-            Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
-            return true; // Если токен валиден
+            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
+            return true;
         } catch (JwtException e) {
-            logger.error("Invalid token: {}", token, e); // Логируем ошибку с подробностями
-            return false; // Токен невалиден
+            return false;
         }
+    }
+
+    public String extractUsername(String token) {
+        return Jwts.parserBuilder().setSigningKey(getSigningKey())
+                .build().parseClaimsJws(token)
+                .getBody().getSubject();
     }
 }

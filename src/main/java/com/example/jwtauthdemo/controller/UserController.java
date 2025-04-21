@@ -59,12 +59,17 @@ public class UserController {
 
         User foundUser = userService.findByUsername(username);
         if (userService.passwordMatches(password, foundUser.getPassword())) {
-            String token = jwtUtil.generateToken(username);
-            return Map.of("token", token);
+            String accessToken = jwtUtil.generateAccessToken(username);
+            String refreshToken = jwtUtil.generateRefreshToken(username);
+            return Map.of(
+                    "accessToken", accessToken,
+                    "refreshToken", refreshToken
+            );
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль");
         }
     }
+
 
     @GetMapping("/hello")
     public String hello() {

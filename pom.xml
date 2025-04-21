@@ -66,6 +66,19 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version> <!-- Убедитесь, что версия совместима с вашим проектом -->
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Для работы с JWT подписями (HS512 и т.п.) -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

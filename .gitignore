@@ -1,0 +1,21 @@
+# Java
+*.class
+*.jar
+*.war
+*.log
+*.iml
+*.db
+*.h2.db
+*.env
+
+# IntelliJ
+.idea/
+*.iws
+*.ipr
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven
+target/
